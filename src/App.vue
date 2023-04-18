@@ -5,7 +5,6 @@
 <template>
   <VApp>
     <TheHeader />
-
     <VMain>
       <RouterView v-slot="{ Component:ViewComponent }">
         <VFadeTransition :hide-on-leave="true">

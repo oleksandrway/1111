@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+
+const logOut = authStore.logOut
 // ...
 </script>
 
@@ -7,7 +12,7 @@
     <VContainer class="flex items-center py-0">
       <VToolbarTitle>
         <RouterLink to="/">
-          Gitart
+          Candies
         </RouterLink>
       </VToolbarTitle>
 
@@ -25,11 +30,15 @@
         </template>
 
         <VCard width="200">
-          <VList>
-            <VListItem to="/about">
-              About
-            </VListItem>
-          </VList>
+          <!-- <VList> -->
+          <VListItem to="/about">
+            Add Candy
+          </VListItem>
+
+          <VBtn @click="logOut">
+            Logout
+          </VBtn>
+          <!-- </vlist> -->
         </VCard>
       </VMenu>
     </VContainer>
