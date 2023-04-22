@@ -17,29 +17,26 @@ const router = createRouter({
     {
       path: '/auth',
       component: AuthForm,
-      // beforeEnter() {
-      //   const authStore = useAuthStore()
-      //   console.log(authStore)
-      //   console.log(authStore.userId)
-      // },
     },
-    { path: '/*', redirect: '/' },
-    // { path: '/about', component: About },
+    {
+      path: '/:pathMatch(.*)*', redirect: () => '/',
+    },
 
   ],
 })
 
-router.beforeEach(() => {
-  // const authStore = useAuthStore()
-  // console.log(to)
-  // console.log(to, authStore.userId)
-  // if (to.path !== '/auth' && !authStore.userId) {
-  //   console.log(authStore.userId)
+router.beforeEach((to) => {
+  const authStore = useAuthStore()
+  if (to.path !== '/auth' && !authStore.userId) {
+    console.log(authStore.userId)
 
-  //   return { path: '/auth' }
-  // }
+    return { path: '/auth' }
+  }
+  if (to.path === '/auth' && authStore.userId) {
+    return { path: '/' }
+  }
 
-  // return true
+  return true
 })
 
 export default router

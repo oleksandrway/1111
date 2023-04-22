@@ -7,27 +7,33 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
   const userId: Ref<string| null> = useStorage('userId', null)
   const token: Ref<string| null> = useStorage('userToken', null)
-  const didAutoLogout = ref(false)
-  const expirationTime: Ref<null| number> = ref(null)
-  const timer: Ref<ReturnType<typeof setTimeout> | null> = ref(null)
+  // const didAutoLogout = ref(false)
+  const expirationTime: Ref<null| number> = useStorage('expirationTime', null)
+  const timer: Ref<ReturnType<typeof setTimeout> | string | number | undefined | null> = ref(null)
 
   const logOut = () => {
     userId.value = null
     token.value = null
+    expirationTime.value = null
 
-    clearTimeout(timer.value)
+    if (timer.value) {
+      clearTimeout(timer.value)
+    }
+
     router.replace('/auth')
   }
 
   const setLogOutTimeout = () => {
     if (expirationTime.value !== null) {
       const expirationIn = expirationTime.value - new Date().getTime()
-      // console.log(expirationTime.value)
-      // console.log(new Date().getTime())
-      // console.log(expirationIn)
-      timer.value = setTimeout(() => {
+      if (expirationIn > 0) {
+        timer.value = setTimeout(() => {
+          logOut()
+        }, expirationIn)
+      }
+      else {
         logOut()
-      }, 15000)
+      }
     }
   }
 
@@ -54,12 +60,18 @@ export const useAuthStore = defineStore('auth', () => {
     console.log(responseData)
     userId.value = responseData.localId
     token.value = responseData.idToken
-    // responseData.expiresIn = 'fjdsf'
-
     expirationTime.value = new Date().getTime() + +responseData.expiresIn * 1000
+    // expirationTime.value = new Date().getTime() + 5000
 
     setLogOutTimeout()
   }
 
-  return { userId, token, didAutoLogout, auth, logOut, setLogOutTimeout }
+  return {
+    userId,
+    token,
+    // didAutoLogout,
+    auth,
+    logOut,
+    setLogOutTimeout,
+  }
 })
