@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 // import Suggestions from '@comp/sections/suggestions/Suggestions.vue'
 import Home from '@/views/Home.vue'
 import AuthForm from '@/views/AuthForm.vue'
+import NewCardForm from '@/views/NewCardForm.vue'
 
 // import About from '@/views/About.vue'
 
@@ -17,6 +18,10 @@ const router = createRouter({
     {
       path: '/auth',
       component: AuthForm,
+    },
+    {
+      path: '/newCard',
+      component: NewCardForm,
     },
     {
       path: '/:pathMatch(.*)*', redirect: () => '/',

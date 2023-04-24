@@ -31,7 +31,7 @@ const logOut = authStore.logOut
 
         <VCard width="200">
           <!-- <VList> -->
-          <VListItem to="/about">
+          <VListItem to="/newCard">
             Add Candy
           </VListItem>
 

@@ -6,7 +6,7 @@ import { useStorage } from '@vueuse/core'
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
   const userId: Ref<string| null> = useStorage('userId', null)
-  const token: Ref<string| null> = useStorage('userToken', null)
+  const token: Ref<string| null> = useStorage('token', null)
   // const didAutoLogout = ref(false)
   const expirationTime: Ref<null| number> = useStorage('expirationTime', null)
   const timer: Ref<ReturnType<typeof setTimeout> | string | number | undefined | null> = ref(null)

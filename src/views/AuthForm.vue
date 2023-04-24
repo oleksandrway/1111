@@ -5,7 +5,7 @@ export default {
   setup() {
     const router = useRouter()
     const valid = ref(false)
-    const email = ref('')
+    const email = ref('sssmth@co.com')
     const emailRules = reactive([
       (value: string) => {
         if (value) return true
@@ -18,7 +18,7 @@ export default {
         return 'E-mail must be valid.'
       },
     ])
-    const password = ref('')
+    const password = ref('somepassword134')
     const passwordRules = reactive([
       (value: string) => {
         if (value) return true
@@ -75,46 +75,6 @@ export default {
       auth,
     }
   },
-  // data: () => ({
-  //   // mode: 'logIn',
-  //   // authStore: useAuthStore(),
-  //   valid: false,
-  //   email: '',
-  //   emailRules: [
-  //     (value: string) => {
-  //       if (value) return true
-
-  //       return 'E-mail is requred.'
-  //     },
-  //     (value: string) => {
-  //       if (/.+@.+\..+/.test(value)) return true
-
-  //       return 'E-mail must be valid.'
-  //     },
-  //   ],
-  //   password: '',
-  //   passwordRules: [
-  //     (value: string) => {
-  //       if (value) return true
-
-  //       return 'password is required.'
-  //     },
-  //     (value: string) => {
-  //       if (value?.length >= 8) return true
-
-  //       return 'password must be more than 7  characters.'
-  //     },
-  //   ],
-  // }),
-  // methods: {
-  //   log() {
-  //     if (this.valid) {
-  //       console.log(this.email, this.password)
-
-  //       this.authStore.auth()
-  //     }
-  //   },
-  // },
 }
 </script>
 
@@ -156,6 +116,9 @@ export default {
             class="mt-2"
           >
             {{ submitButtonCaption }}
+          </VBtn>
+          <VBtn>
+            Button
           </VBtn>
         </VCol>
         <VCol>
