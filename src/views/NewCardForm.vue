@@ -5,7 +5,7 @@ export default {
   setup() {
     const router = useRouter()
     const valid = ref(false)
-    const message = ref('')
+    const message = ref('fdsfsdfds')
     const messageRules = reactive([
       (value: string) => {
         if (value) return true
@@ -27,21 +27,23 @@ export default {
           return true
         }
         return 'picture is required'
-        // return !value || 'picture is required'
       },
     ])
 
     const cardsStore = useCardStore()
 
-    const create = async() => {
-      if (valid.value) {
-        if (pictureInput.value?.files) {
-          try {
-            await cardsStore.createCard(message.value, pictureInput.value.files[0])
-          }
-          catch (e) {
-            console.log(e)
-          }
+    const create = async(e: Promise<{}>) => {
+      await e
+
+      if (!valid.value)
+        return
+
+      if (pictureInput.value?.files) {
+        try {
+          await cardsStore.createCard(message.value, pictureInput.value.files[0])
+        }
+        catch (e) {
+          console.warn(e)
         }
       }
     }
@@ -53,6 +55,7 @@ export default {
       pictureInput,
       PictureRules,
       create,
+
     }
   },
 }

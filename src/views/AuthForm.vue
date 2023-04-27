@@ -49,14 +49,15 @@ export default {
       else mode.value = 'logIn'
     }
 
-    const auth = async() => {
+    const auth = async(e: Promise<{}>) => {
+      await e
       if (valid.value) {
         try {
           await authStore.auth(email.value, password.value, mode.value)
           router.replace('/')
         }
         catch (e) {
-          console.log(e)
+          console.warn(e)
         }
       }
     }
@@ -116,9 +117,6 @@ export default {
             class="mt-2"
           >
             {{ submitButtonCaption }}
-          </VBtn>
-          <VBtn>
-            Button
           </VBtn>
         </VCol>
         <VCol>

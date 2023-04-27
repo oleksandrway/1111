@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const auth = async(email: string, password: string, mode: string) => {
-    console.log(email, password, mode)
+    // console.log(email, password, mode)
 
     const API_KEY = 'AIzaSyCMjGDT2dQLVoyytrjylwEcjuRvjU7dIdA'
     const signUpUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`
@@ -57,7 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
     },
     )
     const responseData: { localId: string; idToken: string; expiresIn: string } = await response.json()
-    console.log(responseData)
+    // console.log(responseData)
     userId.value = responseData.localId
     token.value = responseData.idToken
     expirationTime.value = new Date().getTime() + +responseData.expiresIn * 1000

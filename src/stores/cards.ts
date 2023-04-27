@@ -1,45 +1,88 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { defineStore } from 'pinia'
 
 import { useStorage } from '@vueuse/core'
+
+import { getDownloadURL, ref as storageRef } from 'firebase/storage'
+import { useDatabaseList, useFirebaseStorage, useStorageFile } from 'vuefire'
+
+import { ref as dbRef, getDatabase, push, set } from 'firebase/database'
 
 import { useAuthStore } from '@/stores/auth'
 
 import type { RemovableRef } from '@vueuse/core'
 
+// Get a reference to the storage service, which is used to create references in your storage bucket
+
 export const useCardStore = defineStore('cardsStore', () => {
-  const cards: Ref<{ id: string }[]> = useStorage('f', [])
+  // const cards: Ref<{ id: string }[]> = useStorage('f', [])
   // const userId: Ref<string| null> = useStorage('userId', null)
 
-  const usedCardIds: RemovableRef<Set<string>> = useStorage('usedCardIds', new Set())
-  const authStore = useAuthStore()
+  const usedCardIds: RemovableRef<Set<string>> = useStorage<Set<string>>('usedCardIds', new Set())
+  // const usedCardIds = useStorage<Set<string>>('usedCardIds', new Set())
 
-  usedCardIds.value.add(3)
+  // const authStore = useAuthStore()
+
+  const db = getDatabase()
+  const cardsRef = dbRef(db, 'cards')
+  // console.log(todosRef)
+  // const newFileRef = push(todosRef, 23432)
+  // set(newFileRef, {
+  //   name: 'firstTodo',
+  // })
+  const cards = useStorage('todos', useDatabaseList(cardsRef))
+  // console.log(cards.value)
+
+  const firebaseStorage = useFirebaseStorage()
+  const string = 'fsdlfdsf'
+
+  // Create a storage reference from our storage service
+
+  usedCardIds.value.add('3')
   // usedCardIds.add(23)
 
-  console.log(usedCardIds)
+  // console.log(usedCardIds)
 
   // cards[0].title = 'hi'
 
+  console.log('hi')
   const createCard = async(message: string, picture: File) => {
-    console.log(message)
-    console.log(picture)
-    // const API_KEY = 'AIzaSyCMjGDT2dQLVoyytrjylwEcjuRvjU7dIdA'
-    const bucketName = 'gs://project-3161223530572492402.appspot.com/'
-    const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o?name=${picture.name}`
+    try {
+      console.log(0)
+      const firebaseStorageRef = await storageRef(firebaseStorage, `images/${picture.name}`)
+      console.log(1)
+      const {
+        upload,
+      } = useStorageFile(firebaseStorageRef)
+      await upload(picture)
 
-    const response = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': picture.type,
-      },
-      body: picture,
-      // For binary data, use "body: file" instead of "body: atob(fileData)"
-    })
+      console.log(2)
 
-    const responseData: any = await response.json()
-    console.log(responseData)
+      try {
+        const url = await getDownloadURL(firebaseStorageRef)
+        console.log('url: ', url)
+      }
+      catch (error) {
+        console.log('er', error)
+      }
+
+      const newFileRef = push(cardsRef, {
+        picUrl: await getDownloadURL(firebaseStorageRef),
+        message,
+      })
+    }
+    catch (error) {
+      console.log('er', error)
+    }
+
+    console.log('hi')
+    // set(newFileRef, {
+    //   // name: 'firstTodo',
+    //   picUrl: await getDownloadURL(firebaseStorageRef),
+    //   message,
+    // })
   }
 
-  return { createCard, cards }
+  return { createCard, cards, cardsRef, string }
 })
