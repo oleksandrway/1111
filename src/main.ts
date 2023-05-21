@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createVuetify } from 'vuetify'
 
-import { VueFire } from 'vuefire'
+import { VueFire, VueFireAuth } from 'vuefire'
 
 import { firebaseApp } from './firebase'
 
@@ -19,6 +19,9 @@ app.use(createPinia())
 app.use(router)
 app.use(VueFire, {
   firebaseApp,
+  modules: [
+    VueFireAuth(),
+  ],
 
 })
 app.use(createVuetify({

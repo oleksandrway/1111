@@ -12,3 +12,4 @@
 - @mdi/font
 
 prepared te netilify deploy
+

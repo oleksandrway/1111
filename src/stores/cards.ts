@@ -1,88 +1,120 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+// import type { DatabaseReference } from 'vuefire'
+
+import type { VueDatabaseQueryData, _RefDatabase } from 'vuefire'
+
+import type { DatabaseReference } from 'firebase/database'
+
+import imageCompression from 'browser-image-compression'
+
+import { child, ref as dbRef, get, getDatabase, push, set } from 'firebase/database'
+
 import { defineStore } from 'pinia'
 
-import { useStorage } from '@vueuse/core'
-
 import { getDownloadURL, ref as storageRef } from 'firebase/storage'
-import { useDatabaseList, useFirebaseStorage, useStorageFile } from 'vuefire'
-
-import { ref as dbRef, getDatabase, push, set } from 'firebase/database'
-
-import { useAuthStore } from '@/stores/auth'
-
-import type { RemovableRef } from '@vueuse/core'
-
-// Get a reference to the storage service, which is used to create references in your storage bucket
+import { useCurrentUser, useFirebaseStorage, useStorageFile } from 'vuefire'
 
 export const useCardStore = defineStore('cardsStore', () => {
-  // const cards: Ref<{ id: string }[]> = useStorage('f', [])
-  // const userId: Ref<string| null> = useStorage('userId', null)
-
-  const usedCardIds: RemovableRef<Set<string>> = useStorage<Set<string>>('usedCardIds', new Set())
-  // const usedCardIds = useStorage<Set<string>>('usedCardIds', new Set())
-
-  // const authStore = useAuthStore()
+  const user = useCurrentUser()
 
   const db = getDatabase()
-  const cardsRef = dbRef(db, 'cards')
-  // console.log(todosRef)
-  // const newFileRef = push(todosRef, 23432)
-  // set(newFileRef, {
-  //   name: 'firstTodo',
-  // })
-  const cards = useStorage('todos', useDatabaseList(cardsRef))
-  // console.log(cards.value)
+  const cardsFolderName = 'cards'
 
-  const firebaseStorage = useFirebaseStorage()
-  const string = 'fsdlfdsf'
+  const cardsLink = ref<string | null>(null)
+  const cardsRef = ref<DatabaseReference | null>(null)
+  const cards = ref<[string, { imgUrl: string; message: string; isUsed: boolean }][]>([])
+  const cardsIsEmpty = computed(() => !cards.value.length)
 
-  // Create a storage reference from our storage service
+  console.log(cards.value.filter(card => !card[1].isUsed))
 
-  usedCardIds.value.add('3')
-  // usedCardIds.add(23)
+  const unusedCards = computed(() => cards.value.filter(card => !card[1].isUsed))
+  const unusedCardsIsEmpty = computed(() => !unusedCards.value.length)
 
-  // console.log(usedCardIds)
+  const userId = ref<string | null | undefined>(null)
 
-  // cards[0].title = 'hi'
-
-  console.log('hi')
-  const createCard = async(message: string, picture: File) => {
-    try {
-      console.log(0)
-      const firebaseStorageRef = await storageRef(firebaseStorage, `images/${picture.name}`)
-      console.log(1)
-      const {
-        upload,
-      } = useStorageFile(firebaseStorageRef)
-      await upload(picture)
-
-      console.log(2)
-
-      try {
-        const url = await getDownloadURL(firebaseStorageRef)
-        console.log('url: ', url)
+  const getCards = async(cardsRef: DatabaseReference) => {
+    cards.value = await get(child(cardsRef, '/')).then((snapshot) => {
+      if (snapshot.val()) {
+        return Object.entries(snapshot.val())
       }
-      catch (error) {
-        console.log('er', error)
-      }
-
-      const newFileRef = push(cardsRef, {
-        picUrl: await getDownloadURL(firebaseStorageRef),
-        message,
-      })
-    }
-    catch (error) {
-      console.log('er', error)
-    }
-
-    console.log('hi')
-    // set(newFileRef, {
-    //   // name: 'firstTodo',
-    //   picUrl: await getDownloadURL(firebaseStorageRef),
-    //   message,
-    // })
+      return []
+    })
   }
 
-  return { createCard, cards, cardsRef, string }
+  const initCardsStorage = async() => {
+    userId.value = await user.value?.uid
+
+    cardsLink.value = `${cardsFolderName}/${userId.value}`
+    cardsRef.value = dbRef(db, cardsLink.value)
+    getCards(cardsRef.value)
+  }
+
+  const firebaseStorage = useFirebaseStorage()
+
+  const createCard = async(message: string, picture: File) => {
+    const options = {
+      maxSizeMB: 2,
+      useWebWorker: true,
+    }
+
+    const compressedPicture = await imageCompression(picture, options)
+
+    const firebaseStorageRef = await storageRef(firebaseStorage, `users/${userId.value}/${picture.name}`)
+    const {
+      upload,
+    } = useStorageFile(firebaseStorageRef)
+    await upload(compressedPicture)
+
+    if (!cardsRef.value) {
+      return
+    }
+
+    push(cardsRef.value, {
+      imgUrl: await getDownloadURL(firebaseStorageRef),
+      message,
+      isUsed: false,
+    })
+    getCards(cardsRef.value)
+  }
+
+  const changeCardStatus = async(cardId: string, status: boolean) => {
+    if (!cardsRef.value) {
+      return
+    }
+    const cardStatusLink = ref(`${cardsLink.value}/${cardId}/isUsed`)
+    const cardStatusRef = dbRef(db, cardStatusLink.value)
+    set(cardStatusRef, status)
+    getCards(cardsRef.value)
+  }
+
+  const getNewCard = async() => {
+    const card = unusedCards.value[0]
+
+    changeCardStatus(card[0], true)
+    return card[1]
+  }
+
+  const refreshCards = async() => {
+    console.log('refresh')
+    console.log(cards.value)
+    cards.value.forEach((card) => {
+      console.log(card)
+      changeCardStatus(card[0], false)
+    })
+  }
+
+  return {
+    createCard,
+    cardsRef,
+    initCardsStorage,
+    user,
+    cards,
+    cardsIsEmpty,
+    unusedCards,
+    unusedCardsIsEmpty,
+    changeCardStatus,
+    getNewCard,
+    refreshCards,
+  }
 })

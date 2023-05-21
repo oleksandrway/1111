@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
-const authStore = useAuthStore()
-onMounted(() => {
-  authStore.setLogOutTimeout()
-})
+// import { useCurrentUser } from 'vuefire'
+
+// import { useAuthStore } from '@/stores/auth'
+
+// const user = useCurrentUser()
+
 </script>
 
 <template>

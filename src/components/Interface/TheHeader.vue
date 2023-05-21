@@ -3,7 +3,9 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
-const logOut = authStore.logOut
+const onLogOut = () => {
+  authStore.logOut()
+}
 // ...
 </script>
 
@@ -12,11 +14,11 @@ const logOut = authStore.logOut
     <VContainer class="flex items-center py-0">
       <VToolbarTitle>
         <RouterLink to="/">
-          Candies
+          Cards
         </RouterLink>
       </VToolbarTitle>
 
-      <VMenu>
+      <VMenu v-if="authStore.user">
         <template #activator="{props}">
           <VBtn
             density="comfortable"
@@ -32,13 +34,11 @@ const logOut = authStore.logOut
         <VCard width="200">
           <!-- <VList> -->
           <VListItem to="/newCard">
-            Add Candy
+            Add Card
           </VListItem>
-
-          <VBtn @click="logOut">
+          <VListItem @click="onLogOut">
             Logout
-          </VBtn>
-          <!-- </vlist> -->
+          </VListItem>
         </VCard>
       </VMenu>
     </VContainer>

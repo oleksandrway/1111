@@ -1,15 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { useAuthStore } from '@/stores/auth'
-// import { routes } from 'vue-router/auto/routes'
-// console.warn('routes, ', routes)
-// import Popular from '@comp/sections/popular/Popular.vue'
-// import Suggestions from '@comp/sections/suggestions/Suggestions.vue'
+import { useCardStore } from '@/stores/cards'
+
 import Home from '@/views/Home.vue'
 import AuthForm from '@/views/AuthForm.vue'
 import NewCardForm from '@/views/NewCardForm.vue'
-
-// import About from '@/views/About.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,18 +25,71 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
-  const authStore = useAuthStore()
-  if (to.path !== '/auth' && !authStore.userId) {
-    console.log(authStore.userId)
+router.beforeEach((to, __, next) => {
+  const cardsStore = useCardStore()
+  const user = computed(() => {
+    return cardsStore.user
+  })
 
-    return { path: '/auth' }
+  if (user.value === null && to.fullPath !== '/auth') {
+    next('/auth')
   }
-  if (to.path === '/auth' && authStore.userId) {
-    return { path: '/' }
+  else if (user.value === null && to.fullPath === '/auth') {
+    next()
   }
+  else if (user.value === undefined) {
+    let nextCalled = false
+    watch(() => user.value, () => {
+      if (nextCalled)
+        return
+      if (user.value === null && to.fullPath !== '/auth') {
+        next('/auth')
+      }
+      else if (user.value === null && to.fullPath === '/auth') {
+        next()
+      }
+      else if (user.value && to.fullPath !== '/auth') {
+        cardsStore.initCardsStorage().then(() => {
+          next()
+        })
+      }
+      else {
+        cardsStore.initCardsStorage().then(() => {
+          next('/')
+        })
+      }
+      nextCalled = true
+    })
+  }
+  else if (user.value && to.fullPath !== '/auth') {
+    cardsStore.initCardsStorage()
 
-  return true
+    next()
+  }
+  // if (cardsStore.user === undefined) {
+  //   watch(() => cardsStore.user, () => {
+  //     if (cardsStore.user !== undefined) {
+  //       cardsStore.initCardsStorage()
+  //       next()
+  //     }
+  //   })
+  // }
+  // else {
+  //   next()
+  // }
 })
+// router.beforeEach((to) => {
+//   const authStore = useAuthStore()
+//   if (to.path !== '/auth' && !authStore.userId) {
+//     console.log(authStore.userId)
+
+//     return { path: '/auth' }
+//   }
+//   if (to.path === '/auth' && authStore.userId) {
+//     return { path: '/' }
+//   }
+
+//   return true
+// })
 
 export default router
