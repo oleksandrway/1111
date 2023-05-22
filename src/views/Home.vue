@@ -70,8 +70,8 @@ const onRefreshCards = () => {
   <VContainer v-if="!cardsStore.cardsIsEmpty">
     <div>
       <div v-if="card">
-        {{ card.message }}
         <img :src="card.imgUrl" alt="pic">
+        {{ card.message }}
       </div>
     </div>
     <VBtn
@@ -97,3 +97,10 @@ const onRefreshCards = () => {
     </VListItem>
   </VContainer>
 </template>
+
+<style lang="scss" scoped>
+img {
+  height: 300px;
+
+}
+</style>

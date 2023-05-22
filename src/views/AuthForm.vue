@@ -123,13 +123,6 @@ const onLogout = () => {
           >
             {{ onChangeModeButtonCaption }}
           </VBtn>
-          <VBtn
-            block
-            class="mt-2"
-            @click="onLogout"
-          >
-            logout
-          </VBtn>
         </VCol>
       </VRow>
     </VContainer>
