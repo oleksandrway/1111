@@ -1,8 +1,7 @@
 import { initializeApp } from 'firebase/app'
 // import { getStorage } from 'firebase/storage'
-console.log(import.meta.env.API_KEY)
 export const firebaseApp = initializeApp({
-  apiKey: import.meta.env.API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: 'project-3161223530572492402.firebaseapp.com',
   databaseURL: 'https://project-3161223530572492402-default-rtdb.europe-west1.firebasedatabase.app',
   projectId: 'project-3161223530572492402',

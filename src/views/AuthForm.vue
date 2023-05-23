@@ -81,50 +81,40 @@ const onLogout = () => {
     @submit.prevent="onAuth"
   >
     <Dialog ref="dialog" :message="errorMessage" />
-    <VContainer>
-      <VRow>
-        <VCol
-          cols="12"
-          md="4"
-        >
+    <VContainer class="flex justify-center">
+      <VCard width="500" class="p-30px">
+        <VRow>
           <VTextField
             v-model="email"
             :rules="emailRules"
             label="E-mail"
             required
           />
-        </VCol>
-
-        <VCol
-          cols="12"
-          md="4"
-        >
+        </VRow>
+        <VRow>
           <VTextField
             v-model="password"
             :rules="passwordRules"
             label="password"
             required
           />
-        </VCol>
-        <VCol>
+        </VRow>
+        <VRow>
           <VBtn
             type="submit"
-            block
             class="mt-2"
           >
             {{ submitButtonCaption }}
           </VBtn>
-        </VCol>
-        <VCol>
+
           <VBtn
-            block
             class="mt-2"
             @click="onChangeMode"
           >
             {{ onChangeModeButtonCaption }}
           </VBtn>
-        </VCol>
-      </VRow>
+        </VRow>
+      </VCard>
     </VContainer>
   </VForm>
 </template>
