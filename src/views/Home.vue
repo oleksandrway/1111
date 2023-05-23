@@ -75,7 +75,6 @@ const onRefreshCards = () => {
       </div>
     </div>
     <VBtn
-      block
       class="mt-2"
       :disabled="getCardIsDisabled || cardsStore.unusedCardsIsEmpty"
       @click="onGetNewCard"
@@ -83,7 +82,6 @@ const onRefreshCards = () => {
       get Card
     </VBtn>
     <VBtn
-      block
       class="mt-2"
       :disabled="!cardsStore.unusedCardsIsEmpty"
       @click="onRefreshCards"
@@ -92,15 +90,15 @@ const onRefreshCards = () => {
     </VBtn>
   </VContainer>
   <VContainer v-else>
-    <VListItem to="/newCard">
-      Add ur cards first
-    </VListItem>
+    You don't have any cards yet <br>
+    <VBtn to="/newCard">
+      Add Card
+    </VBtn>
   </VContainer>
 </template>
 
 <style lang="scss" scoped>
 img {
   height: 300px;
-
 }
 </style>

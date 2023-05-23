@@ -15,6 +15,8 @@ import { defineStore } from 'pinia'
 import { getDownloadURL, ref as storageRef } from 'firebase/storage'
 import { useCurrentUser, useFirebaseStorage, useStorageFile } from 'vuefire'
 
+type CardObject = { message: string; isUsed: boolean; isLearned: boolean } | { message: string; isUsed: boolean;isLearned: boolean; imgUrl: string }
+
 export const useCardStore = defineStore('cardsStore', () => {
   const user = useCurrentUser()
 
@@ -52,29 +54,40 @@ export const useCardStore = defineStore('cardsStore', () => {
 
   const firebaseStorage = useFirebaseStorage()
 
-  const createCard = async(message: string, picture: File) => {
-    const options = {
-      maxSizeMB: 2,
-      useWebWorker: true,
+  const createCard = async(message: string, picture?: File) => {
+    let cardObject: CardObject = {
+      message,
+      isUsed: false,
+      isLearned: false,
     }
 
-    const compressedPicture = await imageCompression(picture, options)
+    if (picture) {
+      const options = {
+        maxSizeMB: 2,
+        useWebWorker: true,
+      }
 
-    const firebaseStorageRef = await storageRef(firebaseStorage, `users/${userId.value}/${picture.name}`)
-    const {
-      upload,
-    } = useStorageFile(firebaseStorageRef)
-    await upload(compressedPicture)
+      const compressedPicture = await imageCompression(picture, options)
+
+      const firebaseStorageRef = await storageRef(firebaseStorage, `users/${userId.value}/${picture.name}`)
+      const {
+        upload,
+      } = useStorageFile(firebaseStorageRef)
+      await upload(compressedPicture)
+
+      const imgUrl = await getDownloadURL(firebaseStorageRef)
+      cardObject = {
+        ...cardObject,
+        imgUrl,
+      }
+    }
 
     if (!cardsRef.value) {
       return
     }
 
-    push(cardsRef.value, {
-      imgUrl: await getDownloadURL(firebaseStorageRef),
-      message,
-      isUsed: false,
-    })
+    // console.log(cardObject)
+    push(cardsRef.value, cardObject)
     getCards(cardsRef.value)
   }
 
