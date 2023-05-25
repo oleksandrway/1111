@@ -51,14 +51,16 @@ const onRefreshCards = async() => {
     <VCard width="700" class="p-30px ">
       <div>
         <div v-if="card">
-          <div v-if="card.imgUrl" class="h-300px <sm:h-200px mb-20px">
+          <div v-if="card.imgUrl" class="h-300px <sm:h-200px mb-30px <sm:mb-15px">
             <img
               class="h-full w-full object-contain"
               :src="card.imgUrl"
               alt="pic"
             >
           </div>
-          {{ card.message }}
+          <div class="card__text h-200px <sm:h-150px overflow-y-auto">
+            {{ card.message }}
+          </div>
         </div>
       </div>
       <br>
@@ -97,3 +99,18 @@ const onRefreshCards = async() => {
     </VBtn>
   </VContainer>
 </template>
+
+<style lang="scss" scoped>
+.card__text::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card__text::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.card__text::-webkit-scrollbar-track {
+  background-color: #363636;
+}
+</style>
