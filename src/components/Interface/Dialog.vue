@@ -10,7 +10,7 @@
           block
           @click="dialogVisible = false"
         >
-          Close Dialog
+          Close
         </VBtn>
       </VCardActions>
     </VCard>

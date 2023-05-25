@@ -55,7 +55,6 @@ const create = async(e: Promise<{}>) => {
       dialogMessage.value = e.message
       dialog.value.dialogVisible = true
     }
-    console.warn(e)
   }
   finally {
     isLoader.value = false

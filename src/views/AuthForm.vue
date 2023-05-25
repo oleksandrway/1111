@@ -2,7 +2,7 @@
 import type { SubmitEventPromise } from 'vuetify'
 
 import { useAuthStore } from '@/stores/auth'
-import type { ComponentRef, Mode } from '@/types'
+import type { Mode } from '@/types'
 import Dialog from '@/components/Interface/Dialog.vue'
 
 const dialog = ref<any>(null)
@@ -64,14 +64,10 @@ const onAuth = async(e: SubmitEventPromise) => {
         errorMessage.value = e.message
         dialog.value.dialogVisible = true
       }
-      // console.warn(e)
     }
   }
 }
 
-const onLogout = () => {
-  authStore.logOut()
-}
 </script>
 
 <template>

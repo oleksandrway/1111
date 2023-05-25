@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { useStorage } from '@vueuse/core'
 
 import { useCardStore } from '@/stores/cards'
 
 const cardsStore = useCardStore()
 
-const btnDisabledTill = useStorage<number | null>('btnDisabledTill', null)
-
-const getCardIsDisabled = ref(false)
-const card = ref<{ imgUrl: string; message: string; isUsed: boolean } | null>(null)
+interface Card {id: string; message: string; isLearned: boolean; imgUrl?: string }
+const card = ref<Card | null>(null)
 const cardStorageKey = 'currentCard'
 
 const getCardFromStorage = () => {
@@ -18,76 +15,80 @@ const getCardFromStorage = () => {
   }
 }
 
-const setNewCard = (newValue: { imgUrl: string; message: string; isUsed: boolean }) => {
+const cardIsLearned = ref(false)
+
+const setNewCard = (newValue: Card | null) => {
   card.value = newValue
   localStorage.setItem(cardStorageKey, JSON.stringify(newValue))
 }
 
-const setBtnTimer = () => {
-  if (!btnDisabledTill.value) {
-    return
-  }
-
-  const timeOut = btnDisabledTill.value - new Date().getTime()
-  if (timeOut <= 0) {
-    return
-  }
-
-  getCardIsDisabled.value = true
-
-  setTimeout(() => {
-    getCardIsDisabled.value = false
-    btnDisabledTill.value = null
-  }, timeOut)
-}
-
-onMounted(() => {
-  setBtnTimer()
-
+onBeforeMount(() => {
   getCardFromStorage()
 })
 
-const onGetNewCard = async() => {
+const getNewCard = async() => {
   const fetchedCard = await cardsStore.getNewCard()
 
   setNewCard(fetchedCard)
-  console.log(Array.isArray(card.value))
-  console.log(card.value)
-
-  btnDisabledTill.value = new Date().getTime() + 2000
-  setBtnTimer()
-  // const
+}
+const onGetNewCard = async() => {
+  if (cardIsLearned.value && card.value) {
+    await cardsStore.setCardAsLearned(card.value?.id)
+    cardIsLearned.value = false
+  }
+  getNewCard()
 }
 
-const onRefreshCards = () => {
-  cardsStore.refreshCards()
-  card.value = null
+const onRefreshCards = async() => {
+  await cardsStore.refreshCards()
+  getNewCard()
 }
 
 </script>
 
 <template>
-  <VContainer v-if="!cardsStore.cardsIsEmpty">
-    <div>
-      <div v-if="card">
-        <img :src="card.imgUrl" alt="pic">
-        {{ card.message }}
+  <VContainer v-if="!cardsStore.cardsIsEmpty" class="flex justify-center">
+    <VCard width="700" class="p-30px ">
+      <div>
+        <div v-if="card">
+          <div v-if="card.imgUrl" class="h-300px <sm:h-200px mb-20px">
+            <img
+              class="h-full w-full object-contain"
+              :src="card.imgUrl"
+              alt="pic"
+            >
+          </div>
+          {{ card.message }}
+        </div>
       </div>
-    </div>
-    <VBtn
-      class="mt-2"
-      :disabled="getCardIsDisabled || cardsStore.unusedCardsIsEmpty"
-      @click="onGetNewCard"
-    >
-      get Card
-    </VBtn>
-    <VBtn
-      class="mt-2"
-      :disabled="!cardsStore.unusedCardsIsEmpty"
-      @click="onRefreshCards"
-    >
-      refresh list
-    </VBtn>
+      <br>
+      <VCheckbox
+        v-model="cardIsLearned"
+        :disabled="cardsStore.unLearnedCardsIsEmpty"
+        label="set as learned card"
+        hide-details
+      />
+
+      <VBtn
+        :disabled="cardsStore.unLearnedCardsIsEmpty"
+        class="mt-2"
+        variant="tonal"
+        @click="onGetNewCard"
+      >
+        Next Card
+      </VBtn>
+      <VBtn
+        variant="tonal"
+        class="mt-2 ml-20px"
+        :disabled="!cardsStore.unLearnedCardsIsEmpty"
+        @click="onRefreshCards"
+      >
+        Refresh Cards
+      </VBtn>
+      <p v-if="cardsStore.unLearnedCardsIsEmpty" class="mt-10px">
+        U learned all cards add new or refresh the list to repeat
+      </p>
+    </VCard>
   </VContainer>
   <VContainer v-else>
     You don't have any cards yet <br>
@@ -96,9 +97,3 @@ const onRefreshCards = () => {
     </VBtn>
   </VContainer>
 </template>
-
-<style lang="scss" scoped>
-img {
-  height: 300px;
-}
-</style>

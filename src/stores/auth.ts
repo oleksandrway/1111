@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-// import { useStorage } from '@vueuse/core'
 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 
@@ -16,7 +15,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (!firebaseAuth)
       return
 
-    console.log(mode)
     if (mode === 'logIn') {
       signInWithEmailAndPassword(firebaseAuth, email, password)
         .then(() => {
@@ -24,7 +22,6 @@ export const useAuthStore = defineStore('auth', () => {
         })
     }
     if (mode === 'signUp') {
-      console.log('sighup')
       createUserWithEmailAndPassword(firebaseAuth, email, password)
         .then(() => {
           router.replace('/')

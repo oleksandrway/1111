@@ -66,30 +66,6 @@ router.beforeEach((to, __, next) => {
 
     next()
   }
-  // if (cardsStore.user === undefined) {
-  //   watch(() => cardsStore.user, () => {
-  //     if (cardsStore.user !== undefined) {
-  //       cardsStore.initCardsStorage()
-  //       next()
-  //     }
-  //   })
-  // }
-  // else {
-  //   next()
-  // }
 })
-// router.beforeEach((to) => {
-//   const authStore = useAuthStore()
-//   if (to.path !== '/auth' && !authStore.userId) {
-//     console.log(authStore.userId)
-
-//     return { path: '/auth' }
-//   }
-//   if (to.path === '/auth' && authStore.userId) {
-//     return { path: '/' }
-//   }
-
-//   return true
-// })
 
 export default router

@@ -1,8 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// import type { DatabaseReference } from 'vuefire'
-
-import type { VueDatabaseQueryData, _RefDatabase } from 'vuefire'
 
 import type { DatabaseReference } from 'firebase/database'
 
@@ -15,7 +10,7 @@ import { defineStore } from 'pinia'
 import { getDownloadURL, ref as storageRef } from 'firebase/storage'
 import { useCurrentUser, useFirebaseStorage, useStorageFile } from 'vuefire'
 
-type CardObject = { message: string; isUsed: boolean; isLearned: boolean } | { message: string; isUsed: boolean;isLearned: boolean; imgUrl: string }
+interface CardObject { message: string; isLearned: boolean; imgUrl?: string }
 
 export const useCardStore = defineStore('cardsStore', () => {
   const user = useCurrentUser()
@@ -25,13 +20,12 @@ export const useCardStore = defineStore('cardsStore', () => {
 
   const cardsLink = ref<string | null>(null)
   const cardsRef = ref<DatabaseReference | null>(null)
-  const cards = ref<[string, { imgUrl: string; message: string; isUsed: boolean }][]>([])
+  const cards = ref<[string, CardObject][]>([])
   const cardsIsEmpty = computed(() => !cards.value.length)
+  const currentCardIndex = ref(0)
 
-  console.log(cards.value.filter(card => !card[1].isUsed))
-
-  const unusedCards = computed(() => cards.value.filter(card => !card[1].isUsed))
-  const unusedCardsIsEmpty = computed(() => !unusedCards.value.length)
+  const unLearnedCards = computed(() => cards.value.filter(card => !card[1].isLearned))
+  const unLearnedCardsIsEmpty = computed(() => !unLearnedCards.value.length)
 
   const userId = ref<string | null | undefined>(null)
 
@@ -57,7 +51,6 @@ export const useCardStore = defineStore('cardsStore', () => {
   const createCard = async(message: string, picture?: File) => {
     let cardObject: CardObject = {
       message,
-      isUsed: false,
       isLearned: false,
     }
 
@@ -86,7 +79,6 @@ export const useCardStore = defineStore('cardsStore', () => {
       return
     }
 
-    // console.log(cardObject)
     push(cardsRef.value, cardObject)
     getCards(cardsRef.value)
   }
@@ -95,26 +87,46 @@ export const useCardStore = defineStore('cardsStore', () => {
     if (!cardsRef.value) {
       return
     }
-    const cardStatusLink = ref(`${cardsLink.value}/${cardId}/isUsed`)
+    const cardStatusLink = ref(`${cardsLink.value}/${cardId}/isLearned`)
     const cardStatusRef = dbRef(db, cardStatusLink.value)
-    set(cardStatusRef, status)
-    getCards(cardsRef.value)
+    await set(cardStatusRef, status)
+    await getCards(cardsRef.value)
+  }
+
+  const setCardAsLearned = async(cardId: string) => {
+    await changeCardStatus(cardId, true)
   }
 
   const getNewCard = async() => {
-    const card = unusedCards.value[0]
+    if (currentCardIndex.value >= 0
+      && currentCardIndex.value < unLearnedCards.value.length - 1) {
+      currentCardIndex.value++
+    }
+    else {
+      currentCardIndex.value = 0
+    }
 
-    changeCardStatus(card[0], true)
-    return card[1]
+    const card = unLearnedCards.value[currentCardIndex.value]
+
+    if (card) {
+      const cardObj = {
+        id: card[0],
+        ...card[1],
+      }
+
+      if (unLearnedCards.value.length === 1) {
+        setCardAsLearned(cardObj.id)
+      }
+      return cardObj
+    }
+
+    return null
   }
 
   const refreshCards = async() => {
-    console.log('refresh')
-    console.log(cards.value)
-    cards.value.forEach((card) => {
-      console.log(card)
-      changeCardStatus(card[0], false)
-    })
+    for (const card of cards.value) {
+      await changeCardStatus(card[0], false)
+    }
   }
 
   return {
@@ -124,9 +136,10 @@ export const useCardStore = defineStore('cardsStore', () => {
     user,
     cards,
     cardsIsEmpty,
-    unusedCards,
-    unusedCardsIsEmpty,
+    unLearnedCards,
+    unLearnedCardsIsEmpty,
     changeCardStatus,
+    setCardAsLearned,
     getNewCard,
     refreshCards,
   }

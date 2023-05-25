@@ -6,7 +6,6 @@ const authStore = useAuthStore()
 const onLogOut = () => {
   authStore.logOut()
 }
-// ...
 </script>
 
 <template>
